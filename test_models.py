@@ -18,7 +18,8 @@ from torch.nn import functional as F
 parser = argparse.ArgumentParser(
     description="TRN testing on the full validation set")
 parser.add_argument('dataset', type=str, choices=['something','jester','moments','charades'])
-parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff'])
+parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff',
+'Ecc'])
 parser.add_argument('weights', type=str)
 parser.add_argument('--arch', type=str, default="resnet101")
 parser.add_argument('--save_scores', type=str, default=None)
@@ -98,7 +99,7 @@ else:
 
 data_loader = torch.utils.data.DataLoader(
         TSNDataSet(args.root_path, args.val_list, num_segments=args.test_segments,
-                   new_length=1 if args.modality == "RGB" else 5,
+                   new_length=1 if args.modality in ["RGB","Ecc"] else 5,
                    modality=args.modality,
                    image_tmpl=prefix,
                    test_mode=True,
@@ -109,7 +110,7 @@ data_loader = torch.utils.data.DataLoader(
                        GroupNormalize(net.input_mean, net.input_std),
                    ])),
         batch_size=1, shuffle=False,
-        num_workers=args.workers * 2, pin_memory=True)
+        num_workers=args.workers *2, pin_memory=True)
 
 if args.gpus is not None:
     devices = [args.gpus[i] for i in range(args.workers)]
@@ -131,7 +132,7 @@ def eval_video(video_data):
     i, data, label = video_data
     num_crop = args.test_crops
 
-    if args.modality == 'RGB':
+    if args.modality in ['RGB', 'Ecc']:
         length = 3
     elif args.modality == 'Flow':
         length = 10

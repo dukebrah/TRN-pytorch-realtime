@@ -53,7 +53,7 @@ def return_jester(modality):
     if modality == 'RGB':
         prefix = '{:05d}.jpg'
         #root_data = '/data/vision/oliva/scratch/bzhou/video/jester/20bn-jester-v1'
-        root_data = '/mnt/localssd1/bzhou/jester/20bn-jester-v1'
+        root_data = '/var/tmp/local/dp195/jester/20bn-jester-v1'
         filename_imglist_train = 'jester/train_videofolder.txt'
         filename_imglist_val = 'jester/val_videofolder.txt'
     elif modality == 'Flow':
@@ -62,6 +62,12 @@ def return_jester(modality):
         filename_imglist_train = 'jester/train_videofolder.txt'
         filename_imglist_val = 'jester/val_videofolder.txt'
         prefix = '{:05d}.jpg'
+    elif modality == 'Ecc':
+            root_data = '/usr/project/xtmp/dp195/jester/ecc1'
+            #root_data = '/mnt/localssd1/bzhou/something/flow'
+            filename_imglist_train = 'jester/train_videofolder.txt'
+            filename_imglist_val = 'jester/test_videofolder.txt'
+            prefix = '{:05d}.jpg'
     else:
         print('no such modality:'+modality)
         os.exit()

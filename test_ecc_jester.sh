@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1,2,3 python3 test_models.py jester Ecc model/TRN_jester_Ecc_BNInception_TRNmultiscale_segment8_best_3_15.pth.tar --arch BNInception --crop_fusion_type TRNmultiscale --test_segments 8 --save_scores ecc_bsize_32.npz

@@ -15,6 +15,7 @@ import moviepy.editor as mpy
 import torchvision
 import torch.nn.parallel
 import torch.optim
+from torch.autograd import Variable
 from models import TSN
 import transforms
 from torch.nn import functional as F
@@ -111,7 +112,8 @@ net.cuda().eval()
 
 # Initialize frame transforms.
 transform = torchvision.transforms.Compose([
-    transforms.GroupOverSample(net.input_size, net.scale_size),
+    transforms.GroupScale(net.scale_size),
+    transforms.GroupCenterCrop(net.input_size),
     transforms.Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
     transforms.ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
     transforms.GroupNormalize(net.input_mean, net.input_std),
@@ -131,12 +133,12 @@ else:
 
 # Make video prediction.
 data = transform(frames)
-input = data.view(-1, 3, data.size(1), data.size(2)).unsqueeze(0).cuda()
+input = Variable(data.view(-1, 3, data.size(1), data.size(2)).unsqueeze(0).cuda(),volatile=True)
 
-with torch.no_grad():
-    logits = net(input)
-    h_x = torch.mean(F.softmax(logits, 1), dim=0).data
-    probs, idx = h_x.sort(0, True)
+#with torch.no_grad():
+logits = net(input)
+h_x = torch.mean(F.softmax(logits, 1), dim=0).data
+probs, idx = h_x.sort(0, True)
 
 # Output the prediction.
 video_name = args.frame_folder if args.frame_folder is not None else args.video_file

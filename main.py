@@ -45,7 +45,9 @@ def main():
     train_augmentation = model.get_augmentation()
 
     model = torch.nn.DataParallel(model, device_ids=args.gpus).cuda()
-
+    checkpoint =
+torch.load('model/TRN_jester_Ecc_BNInception_TRNmultiscale_segment8_best_3_15.pth.tar')
+    model.load_state_dict(checkpoint['state_dict'])
     if args.resume:
         if os.path.isfile(args.resume):
             print(("=> loading checkpoint '{}'".format(args.resume)))
@@ -66,7 +68,7 @@ def main():
     else:
         normalize = IdentityTransform()
 
-    if args.modality == 'RGB':
+    if args.modality in ['RGB', 'Ecc']:
         data_length = 1
     elif args.modality in ['Flow', 'RGBDiff']:
         data_length = 5

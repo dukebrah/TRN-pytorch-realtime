@@ -25,7 +25,7 @@ class TSN(nn.Module):
             raise ValueError("Only avg consensus can be used after Softmax")
 
         if new_length is None:
-            self.new_length = 1 if modality == "RGB" else 5
+            self.new_length = 1 if modality in ['RGB', 'Ecc'] else 5
         else:
             self.new_length = new_length
         if print_spec == True:
@@ -113,6 +113,8 @@ class TSN(nn.Module):
 
             if self.modality == 'Flow':
                 self.input_mean = [128]
+            elif self.modality == 'Ecc':
+                self.input_mean = [128, 128, 128]
             elif self.modality == 'RGBDiff':
                 self.input_mean = self.input_mean * (1 + self.new_length)
         elif base_model == 'InceptionV3':
@@ -211,13 +213,15 @@ class TSN(nn.Module):
         ]
 
     def forward(self, input):
-        sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
+        sample_len = (3 if self.modality in ['RGB', 'Ecc'] else 2) * self.new_length
 
         if self.modality == 'RGBDiff':
             sample_len = 3 * self.new_length
             input = self._get_diff(input)
 
-        base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:]))
+        n,c,h,w = input.size()
+        base_out = self.base_model(input.view(n,c,h,w))
+        #base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:]))
 
         if self.dropout > 0:
             base_out = self.new_fc(base_out)
@@ -225,7 +229,8 @@ class TSN(nn.Module):
         if not self.before_softmax:
             base_out = self.softmax(base_out)
         if self.reshape:
-            base_out = base_out.view((-1, self.num_segments) + base_out.size()[1:])
+            base_out = base_out.view((-1, n) + base_out.size()[1:])
+            #base_out = base_out.view((-1, self.num_segments) + base_out.size()[1:])
 
         output = self.consensus(base_out)
         return output.squeeze(1)
@@ -316,7 +321,7 @@ class TSN(nn.Module):
         return self.input_size * 256 // 224
 
     def get_augmentation(self):
-        if self.modality == 'RGB':
+        if self.modality in ['RGB', 'Ecc']:
             return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75, .66]),
                                                    GroupRandomHorizontalFlip(is_flow=False)])
         elif self.modality == 'Flow':

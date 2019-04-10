@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,2 python3 test_models.py jester RGB model/TRN_jester_RGB_BNInception_TRNmultiscale_segment8_best.pth.tar --arch BNInception --crop_fusion_type TRNmultiscale --test_segments 8 --save_scores rgb_bsize_64.npz
